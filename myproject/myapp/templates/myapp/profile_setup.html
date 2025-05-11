@@ -1,0 +1,83 @@
+<!-- templates/myapp/profile_setup.html -->
+{% extends 'myapp/base.html' %}
+{% block title %}ตั้งค่าโปรไฟล์ - CareME{% endblock %}
+{% block content %}
+<div class="container mx-auto py-6">
+    <h1 class="text-2xl font-bold mb-6">ข้อมูลส่วนตัวสำหรับแผนสุขภาพ</h1>
+    
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="bg-blue-600 text-white p-4">
+            <h2 class="text-xl font-semibold">ข้อมูลส่วนบุคคล</h2>
+            <p class="text-sm mt-1 text-blue-100">ข้อมูลนี้จะช่วยให้เราสร้างแผนสุขภาพที่เหมาะสมกับคุณ</p>
+        </div>
+        
+        <div class="p-6">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.birth_date.label }}</label>
+                        {{ form.birth_date }}
+                        {% if form.birth_date.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.birth_date.errors.0 }}</p>
+                        {% endif %}
+                        {% if form.birth_date.help_text %}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.birth_date.help_text }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.gender.label }}</label>
+                        {{ form.gender }}
+                        {% if form.gender.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.gender.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.height.label }}</label>
+                        {{ form.height }}
+                        {% if form.height.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.height.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.weight.label }}</label>
+                        {{ form.weight }}
+                        {% if form.weight.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.weight.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.activity_level.label }}</label>
+                        {{ form.activity_level }}
+                        {% if form.activity_level.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.activity_level.errors.0 }}</p>
+                        {% endif %}
+                        <p class="text-xs text-gray-500 mt-1">ระดับกิจกรรมที่คุณทำเป็นประจำ</p>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.medical_conditions.label }}</label>
+                        {{ form.medical_conditions }}
+                        {% if form.medical_conditions.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.medical_conditions.errors.0 }}</p>
+                        {% endif %}
+                        <p class="text-xs text-gray-500 mt-1">ข้อมูลนี้จะช่วยให้เราสร้างแผนที่ปลอดภัยสำหรับคุณ</p>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition">
+                        บันทึกข้อมูล
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
