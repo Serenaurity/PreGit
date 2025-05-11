@@ -1,0 +1,70 @@
+<!-- /myproject/myapp/templates/myapp/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CareME - อุปกรณ์ออกกำลังกาย{% endblock %}</title>
+    <!-- Google Fonts: Noto Sans Thai -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Override Tailwind's font with Noto Sans Thai */
+        body {
+            font-family: 'Noto Sans Thai', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Header with Navigation -->
+    <header class="bg-blue-600 text-white p-4 shadow">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">
+                <a href="{% url 'home' %}" class="hover:text-gray-200 transition">CareME</a>
+            </h1>
+            <!-- ส่วนของเมนูใน base.html -->
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="{% url 'home' %}" class="hover:text-gray-200 transition">หน้าแรก</a></li>
+                    <li><a href="{% url 'product_list' %}" class="hover:text-gray-200 transition">อุปกรณ์</a></li>
+                    <li><a href="{% url 'subscription_list' %}" class="hover:text-gray-200 transition">สมาชิก</a></li>
+                    <li><a href="{% url 'content_list' %}" class="hover:text-gray-200 transition">บทความ</a></li>
+                    {% if user.is_authenticated %}
+                        <li class="relative group">
+                            <a href="#" class="hover:text-gray-200 transition flex items-center">
+                                แผนสุขภาพ <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </a>
+                            <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block z-10">
+                                <div class="py-1">
+                                    <a href="{% url 'view_exercise_plan' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">แผนออกกำลังกาย</a>
+                                    <a href="{% url 'view_meal_plan' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">แผนอาหาร</a>
+                                    <a href="{% url 'profile_setup' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ข้อมูลส่วนตัว</a>
+                                </div>
+                            </div>
+                        </li>
+                        <li><a href="{% url 'cart' %}" class="hover:text-gray-200 transition">ตะกร้า</a></li>
+                        <li><a href="{% url 'dashboard' %}" class="hover:text-gray-200 transition">แดชบอร์ด</a></li>
+                        <li><a href="{% url 'logout' %}" class="hover:text-gray-200 transition">ออกจากระบบ</a></li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}" class="hover:text-gray-200 transition">เข้าสู่ระบบ</a></li>
+                        <li><a href="{% url 'register' %}" class="hover:text-gray-200 transition">สมัครสมาชิก</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto p-6">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 text-gray-700 p-4 mt-6">
+        <div class="container mx-auto text-center">
+            <p>© 2568 CareME - อุปกรณ์ออกกำลังกาย. สงวนลิขสิทธิ์ทั้งหมด.</p>
+        </div>
+    </footer>
+</body>
+</html>
