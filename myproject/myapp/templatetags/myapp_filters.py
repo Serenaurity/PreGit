@@ -54,3 +54,17 @@ def groupby_filter(value, key):
     
     keyfunc = lambda x: getattr(x, key)
     return [{'grouper': k, 'list': list(g)} for k, g in groupby(sorted(value, key=keyfunc), key=keyfunc)]
+
+@register.filter
+def div(value, arg):
+    """หารค่าด้วยอาร์กิวเมนต์"""
+    try:
+        # เพิ่มการตรวจสอบค่า None
+        if value is None or arg is None:
+            return None
+        # ป้องกันการหารด้วย 0
+        if float(arg) == 0:
+            return None
+        return float(value) / float(arg)
+    except (ValueError, TypeError, ZeroDivisionError):
+        return None

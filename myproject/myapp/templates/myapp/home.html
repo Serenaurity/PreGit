@@ -3,8 +3,8 @@
 {% block title %}CareME - ค้นพบเส้นทางสู่สุขภาพที่ดีของคุณ{% endblock %}
 {% block content %}
 {% load static %}
-    <!-- Hero Section -->
-    <div class="relative h-screen overflow-hidden bg-rich-black">
+    <!-- Hero Section (Full width) -->
+    <div class="relative h-screen w-full bg-hero transition-colors duration-300">
         <!-- Background Video/Image -->
         <div class="absolute inset-0 opacity-50">
             <video class="h-full w-full object-cover" autoplay loop muted>
@@ -14,36 +14,22 @@
             </video>
         </div>
         
-        <!-- Hero Content - Split Screen Layout -->
-        <div class="absolute inset-0 flex flex-col md:flex-row items-center">
-            <div class="w-full md:w-1/2 pl-8 md:pl-16 pr-8 md:pr-0 text-white z-10">
-                <h1 class="text-5xl md:text-7xl font-display font-extrabold tracking-wide leading-tight mb-4 animate-float">
-                    <span class="block">เส้นทางสู่</span>
-                    <span class="bg-gradient-to-r from-mint to-teal bg-clip-text text-transparent">สุขภาพที่ดีที่สุด</span>
-                </h1>
-                <p class="text-xl md:text-2xl mb-8 text-gray-300 max-w-lg">
-                    อุปกรณ์ออกกำลังกายคุณภาพสูง พร้อมแผนโภชนาการและการออกกำลังกายเฉพาะบุคคล
-                </p>
-                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                    <a href="{% url 'product_list' %}" class="px-8 py-4 bg-gradient-to-r from-mint to-teal text-rich-black font-bold rounded-full hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
-                        ค้นหาอุปกรณ์
-                    </a>
-                    <a href="{% url 'subscription_list' %}" class="px-8 py-4 border-2 border-mint text-white font-bold rounded-full hover:bg-mint hover:bg-opacity-20 transform hover:-translate-y-1 transition-all duration-300">
-                        สมัครสมาชิก
-                    </a>
-                </div>
-            </div>
-            <div class="hidden md:block w-1/2 h-full relative">
-                <!-- Animated fitness equipment images -->
-                <div class="absolute right-[25%] top-[20%] transform rotate-12 animate-float" style="animation-delay: 0.5s;">
-                    <img src="{% static 'images/product1.png' %}" alt="Fitness Equipment" class="h-40 object-contain">
-                </div>
-                <div class="absolute right-[40%] top-[45%] transform -rotate-6 animate-float" style="animation-delay: 1s;">
-                    <img src="{% static 'images/product2.png' %}" alt="Fitness Equipment" class="h-48 object-contain">
-                </div>
-                <div class="absolute right-[15%] top-[60%] transform rotate-3 animate-float" style="animation-delay: 1.5s;">
-                    <img src="{% static 'images/product3.png' %}" alt="Fitness Equipment" class="h-36 object-contain">
-                </div>
+        <!-- Hero Content - Center Layout -->
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+            <h1 class="text-5xl md:text-7xl font-display font-extrabold tracking-wide leading-tight mb-4 animate-float">
+                <span class="block">เส้นทางสู่</span>
+                <span class="bg-gradient-to-r from-mint to-teal bg-clip-text text-transparent">สุขภาพที่ดีที่สุด</span>
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 text-gray-300 max-w-2xl">
+                อุปกรณ์ออกกำลังกายคุณภาพสูง พร้อมแผนโภชนาการและการออกกำลังกายเฉพาะบุคคล
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="{% url 'product_list' %}" class="px-8 py-4 bg-gradient-to-r from-mint to-teal text-rich-black font-bold rounded-full hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
+                    ค้นหาอุปกรณ์
+                </a>
+                <a href="{% url 'subscription_list' %}" class="px-8 py-4 border-2 border-mint text-white font-bold rounded-full hover:bg-mint hover:bg-opacity-20 transform hover:-translate-y-1 transition-all duration-300">
+                    สมัครสมาชิก
+                </a>
             </div>
         </div>
         
@@ -56,22 +42,22 @@
     </div>
     
     <!-- Social Proof Section -->
-    <section class="py-20 bg-gradient-to-b from-rich-black to-bg-dark dark:to-gray-900">
-        <div class="container mx-auto px-4">
+    <section class="py-20 bg-hero w-full transition-colors duration-300">
+        <div class="container-narrow">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                <div class="bg-white bg-opacity-10 backdrop-blur-lg p-6 rounded-xl animate-on-scroll">
+                <div class="bg-white dark:bg-gray-800 bg-opacity-10 dark:bg-opacity-10 backdrop-blur-lg p-6 rounded-xl animate-on-scroll">
                     <div class="text-4xl font-bold text-mint mb-2" data-count="10000">0</div>
                     <p class="text-white">ผู้ใช้ที่มีความสุข</p>
                 </div>
-                <div class="bg-white bg-opacity-10 backdrop-blur-lg p-6 rounded-xl animate-on-scroll">
+                <div class="bg-white dark:bg-gray-800 bg-opacity-10 dark:bg-opacity-10 backdrop-blur-lg p-6 rounded-xl animate-on-scroll">
                     <div class="text-4xl font-bold text-mint mb-2" data-count="500">0</div>
                     <p class="text-white">อุปกรณ์ออกกำลังกาย</p>
                 </div>
-                <div class="bg-white bg-opacity-10 backdrop-blur-lg p-6 rounded-xl animate-on-scroll">
+                <div class="bg-white dark:bg-gray-800 bg-opacity-10 dark:bg-opacity-10 backdrop-blur-lg p-6 rounded-xl animate-on-scroll">
                     <div class="text-4xl font-bold text-mint mb-2" data-count="100">0</div>
                     <p class="text-white">โค้ชมืออาชีพ</p>
                 </div>
-                <div class="bg-white bg-opacity-10 backdrop-blur-lg p-6 rounded-xl animate-on-scroll">
+                <div class="bg-white dark:bg-gray-800 bg-opacity-10 dark:bg-opacity-10 backdrop-blur-lg p-6 rounded-xl animate-on-scroll">
                     <div class="text-4xl font-bold text-mint mb-2" data-count="25">0</div>
                     <p class="text-white">ศูนย์บริการทั่วประเทศ</p>
                 </div>
@@ -80,8 +66,8 @@
     </section>
     
     <!-- Membership Plans -->
-    <section class="py-20 bg-bg-light dark:bg-bg-dark">
-        <div class="container mx-auto px-4">
+    <section class="home-section py-20 bg-bg-light dark:bg-bg-dark">
+        <div class="container-narrow">
             <h2 class="text-4xl md:text-5xl font-display font-bold mb-4 text-center">
                 <span class="bg-gradient-to-r from-mint to-teal bg-clip-text text-transparent">
                     แพ็คเกจสมาชิก
@@ -94,7 +80,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {% for plan in subscription_plans %}
                     <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl animate-on-scroll">
-                        <div class="bg-gradient-to-r from-mint to-teal py-6 px-6">
+                        <div class="bg-gradient-to-r {% if forloop.counter == 1 %}from-mint to-teal{% elif forloop.counter == 2 %}from-peach to-secondary-dark{% else %}from-blue-400 to-purple-500{% endif %} py-6 px-6">
                             <h3 class="text-2xl font-bold text-rich-black">{{ plan.name }}</h3>
                             <p class="text-gray-800">{{ plan.get_duration_display }}</p>
                         </div>
@@ -104,10 +90,9 @@
                                 <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">/{{ plan.get_duration_display }}</span>
                             </div>
                             <div class="space-y-4 mb-8">
-                                {% comment %} Here you would add the plan features from the description {% endcomment %}
                                 <p class="text-gray-600 dark:text-gray-300">{{ plan.description }}</p>
                             </div>
-                            <a href="{% url 'subscription_detail' plan.id %}" class="block text-center w-full py-4 bg-gradient-to-r from-mint to-teal rounded-full text-rich-black font-bold tracking-wide transform transition-transform hover:scale-105">
+                            <a href="{% url 'subscription_detail' plan.id %}" class="block text-center w-full py-4 bg-gradient-to-r {% if forloop.counter == 1 %}from-mint to-teal{% elif forloop.counter == 2 %}from-peach to-secondary-dark{% else %}from-blue-400 to-purple-500{% endif %} rounded-full {% if forloop.counter == 1 %}text-rich-black{% else %}text-white{% endif %} font-bold tracking-wide transform transition-transform hover:scale-105">
                                 สมัครเลย
                             </a>
                         </div>
@@ -122,8 +107,8 @@
     </section>
     
     <!-- Featured Products -->
-    <section class="py-20 bg-gray-100 dark:bg-gray-900">
-        <div class="container mx-auto px-4">
+    <section class="home-section py-20 bg-gray-100 dark:bg-gray-900">
+        <div class="container-narrow">
             <h2 class="text-4xl md:text-5xl font-display font-bold mb-4 text-center">
                 <span class="bg-gradient-to-r from-mint to-teal bg-clip-text text-transparent">
                     อุปกรณ์แนะนำ
@@ -179,8 +164,8 @@
     </section>
     
     <!-- Daily Inspiration Section -->
-    <section class="py-20 bg-bg-light dark:bg-bg-dark">
-        <div class="container mx-auto px-4">
+    <section class="home-section py-20 bg-bg-light dark:bg-bg-dark">
+        <div class="container-narrow">
             <h2 class="text-4xl md:text-5xl font-display font-bold mb-4 text-center">
                 <span class="bg-gradient-to-r from-peach to-secondary-dark bg-clip-text text-transparent">
                     แรงบันดาลใจแห่งวัน
@@ -202,45 +187,16 @@
         </div>
     </section>
 
-    <!-- JavaScript for number counting animation -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const counters = document.querySelectorAll('[data-count]');
-            
-            function animateCounters() {
-                counters.forEach(counter => {
-                    const target = parseInt(counter.getAttribute('data-count'));
-                    const duration = 2000; // 2 seconds
-                    const step = target / (duration / 16); // 16ms per frame (approx. 60fps)
-                    let current = 0;
-                    
-                    const updateCounter = () => {
-                        current += step;
-                        if (current < target) {
-                            counter.innerText = Math.ceil(current);
-                            requestAnimationFrame(updateCounter);
-                        } else {
-                            counter.innerText = target;
-                        }
-                    };
-                    
-                    updateCounter();
-                });
-            }
-            
-            // Animate counters when they come into view
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        animateCounters();
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.5 });
-            
-            if (counters.length > 0) {
-                observer.observe(counters[0].parentElement.parentElement);
-            }
-        });
-    </script>
+    <!-- CTA Section -->
+    <section class="home-section py-20 bg-gradient-to-r from-mint to-teal">
+        <div class="container-narrow text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-rich-black mb-6">พร้อมเริ่มต้นการเดินทางสู่สุขภาพที่ดีกว่า?</h2>
+            <p class="text-xl text-rich-black opacity-90 max-w-2xl mx-auto mb-8">
+                สมัครสมาชิกวันนี้และเริ่มต้นการเปลี่ยนแปลงตัวเองเพื่อสุขภาพที่ดีขึ้น ด้วยแผนออกกำลังกายและโภชนาการที่ปรับแต่งเฉพาะคุณ
+            </p>
+            <a href="{% url 'subscription_list' %}" class="inline-block py-4 px-8 bg-rich-black text-white font-bold rounded-full hover:bg-opacity-90 transform hover:-translate-y-1 transition-all duration-300">
+                เริ่มต้นตอนนี้
+            </a>
+        </div>
+    </section>
 {% endblock %}
