@@ -66,11 +66,11 @@ class Subscription(models.Model):
 
 class Order(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('paid', 'Paid'),
-        ('shipped', 'Shipped'),
-        ('delivered', 'Delivered'),
-        ('cancelled', 'Cancelled'),
+        ('pending', 'รอดำเนินการ'),
+        ('paid', 'ชำระแล้ว'),
+        ('shipped', 'จัดส่งแล้ว'),
+        ('delivered', 'ได้รับสินค้าแล้ว'),
+        ('cancelled', 'ยกเลิก'),
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
@@ -78,6 +78,15 @@ class Order(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    order_number = models.CharField(max_length=20, unique=True, null=True, blank=True)
+    
+    def __str__(self):
+        return f"คำสั่งซื้อ #{self.id} - {self.user.username}"
+        
+    def save(self, *args, **kwargs):
+        if not self.order_number and self.id:
+            self.order_number = f"ORD-{self.id:06d}"
+        super().save(*args, **kwargs)
     
     def __str__(self):
         return f"Order #{self.id} - {self.user.username}"

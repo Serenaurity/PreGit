@@ -1,7 +1,7 @@
 # forms.py - เพิ่มฟอร์มสำหรับกรอกข้อมูล
 
 from django import forms
-from .models import UserProfile, ExercisePlan, MealPlan
+from .models import UserProfile, ExercisePlan, MealPlan, NutritionPlan
 # เพิ่มใน forms.py
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -66,4 +66,21 @@ class MealPlanForm(forms.ModelForm):
             'protein_ratio': forms.NumberInput(attrs={'min': 10, 'max': 50}),
             'carb_ratio': forms.NumberInput(attrs={'min': 10, 'max': 70}),
             'fat_ratio': forms.NumberInput(attrs={'min': 10, 'max': 50}),
+        }
+
+# เพิ่มคลาสนี้ลงในไฟล์ forms.py
+class NutritionPreferencesForm(forms.ModelForm):
+    class Meta:
+        model = NutritionPlan
+        fields = ['goal', 'calorie_target', 'protein_ratio', 'carb_ratio', 'fat_ratio', 'dietary_restriction']
+        labels = {
+            'goal': 'เป้าหมาย',
+            'calorie_target': 'เป้าหมายแคลอรี่ต่อวัน',
+            'protein_ratio': 'สัดส่วนโปรตีน (%)',
+            'carb_ratio': 'สัดส่วนคาร์โบไฮเดรต (%)',
+            'fat_ratio': 'สัดส่วนไขมัน (%)',
+            'dietary_restriction': 'ข้อจำกัดด้านอาหาร'
+        }
+        widgets = {
+            'dietary_restriction': forms.Textarea(attrs={'rows': 3}),
         }

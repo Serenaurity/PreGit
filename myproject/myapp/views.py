@@ -3,7 +3,8 @@ from django.db.models import Count
 from .models import (
     UserProfile, ExercisePlan, WorkoutDay, MealPlan, DailyMeal, 
     Exercise, WorkoutExercise, Recipe, Ingredient, MealItem,
-    ForumTopic, ForumThread, Article, Video, Content
+    ForumTopic, ForumThread, Article, Video, Content,
+    Product, Order, OrderItem, SubscriptionPlan, Subscription
 )
 from .forms import UserProfileForm, ExercisePlanForm, MealPlanForm, NutritionPreferencesForm
 from .forms import CustomUserCreationForm
