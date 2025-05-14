@@ -18,6 +18,7 @@ from django.views.generic import ListView, DetailView
 from django.db.models import Q, Sum
 from django.utils import timezone
 from itertools import cycle
+from allauth.socialaccount.models import SocialAccount
 
 def register(request):
     """ฟังก์ชันสำหรับลงทะเบียนผู้ใช้ใหม่"""
@@ -186,7 +187,14 @@ def user_dashboard(request):
         user_profile = UserProfile.objects.get(user=request.user)
     except UserProfile.DoesNotExist:
         user_profile = None
-    
+
+    # ตรวจสอบว่าผู้ใช้ล็อกอินผ่าน Google หรือไม่
+    try:
+        social_account = SocialAccount.objects.get(user=request.user, provider='google')
+        is_google_user = True
+    except SocialAccount.DoesNotExist:
+        is_google_user = False
+
     # ดึงข้อมูลสมาชิก
     active_subscription = Subscription.objects.filter(
         user=request.user, 
@@ -217,7 +225,15 @@ def user_dashboard(request):
     
     # ดึงข้อมูลแผนอาหาร
     meal_plan = MealPlan.objects.filter(user=request.user).order_by('-created_at').first()
-    
+
+    # คำนวณค่า BMI
+    if user_profile and user_profile.weight and user_profile.height:
+        height_m = user_profile.height / 100.0  # แปลงเซนติเมตรเป็นเมตร
+        bmi = user_profile.weight / (height_m * height_m)
+        user_profile.bmi = round(bmi, 1)
+    else:
+        user_profile.bmi = None
+
     # ดึงข้อมูลอาหารวันนี้
     today_meal = None
     if meal_plan:
@@ -266,6 +282,7 @@ def user_dashboard(request):
         'today_workout': today_workout,
         'meal_plan': meal_plan,
         'today_meal': today_meal,
+        'is_google_user': is_google_user,
         'recommended_articles': recommended_articles,
         'last_activity': last_activity
     }

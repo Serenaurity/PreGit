@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     # Django admin interface
     path('admin/', admin.site.urls),
-    
+    path('accounts/', include('allauth.urls')),    
     # Include all URL patterns from myapp.urls
     # This will handle all routes including home page, login, registration, etc.
     path('', include('myapp.urls')),
