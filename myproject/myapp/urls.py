@@ -7,7 +7,7 @@ from . import views
 
 urlpatterns = [
     # การรับรองตัวตน
-    path('login/', auth_views.LoginView.as_view(template_name='myapp/login.html'), name='login'),
+    path('login/', views.login_view, name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
     path('register/', views.register, name='register'),
 
@@ -62,6 +62,8 @@ urlpatterns = [
     
     # หน้าเพิ่มเติม
     path('wishlist/', views.wishlist, name='wishlist'),
+    # เพิ่มในรายการ urlpatterns
+    path('wishlist/remove/<int:item_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
     path('support/', views.support, name='support'),
     path('nutrition-plan/', views.nutrition_plan, name='nutrition_plan'),
 ]

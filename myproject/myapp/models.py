@@ -488,3 +488,14 @@ class Content(models.Model):
     
     def __str__(self):
         return self.title
+
+class Wishlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wishlist_items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('user', 'product')  # ป้องกันการเพิ่มสินค้าซ้ำ
+        
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"

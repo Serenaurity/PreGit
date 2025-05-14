@@ -20,6 +20,49 @@ from django.utils import timezone
 from itertools import cycle
 from allauth.socialaccount.models import SocialAccount
 
+# In views.py, update the register function:
+# In views.py, update the login view (or create one if using Django's default view)
+
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import AuthenticationForm
+
+def login_view(request):
+    """Custom login view with better message handling"""
+    
+    # If user is already authenticated, redirect to dashboard
+    if request.user.is_authenticated:
+        # Redirect to 'next' parameter if available, otherwise to dashboard
+        next_url = request.POST.get('next', 'dashboard')
+        return redirect(next_url)
+    
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            
+            if user is not None:
+                login(request, user)
+                messages.success(request, f'ยินดีต้อนรับกลับมา, {user.username}!')
+                
+                # Redirect to 'next' parameter if available, otherwise to dashboard
+                next_url = request.POST.get('next', '')
+                if next_url:
+                    return redirect(next_url)
+                else:
+                    return redirect('dashboard')
+            else:
+                messages.error(request, 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
+        else:
+            messages.error(request, 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
+    else:
+        form = AuthenticationForm()
+    
+    return render(request, 'myapp/login.html', {'form': form})
+
 def register(request):
     """ฟังก์ชันสำหรับลงทะเบียนผู้ใช้ใหม่"""
     if request.method == 'POST':
@@ -34,7 +77,9 @@ def register(request):
             user = authenticate(username=username, password=password)
             login(request, user)
             messages.success(request, 'ลงทะเบียนสำเร็จ! ยินดีต้อนรับสู่ CareME')
-            return redirect('dashboard')
+            
+            # Redirect to profile setup first to get user information
+            return redirect('profile_setup')
     else:
         form = CustomUserCreationForm()
     
@@ -42,7 +87,7 @@ def register(request):
         'form': form
     }
     return render(request, 'myapp/register.html', context)
-    
+
 # Home Page (FBV)
 def home(request):
     featured_products = Product.objects.filter(is_active=True).order_by('-created_at')[:4]
@@ -178,75 +223,76 @@ def subscribe(request, plan_id):
 # views.py - เพิ่มฟังก์ชันวิว
 
 # views.py
-# แทนที่ของเดิมหรือแก้ไขเพิ่มเติม
+# In views.py, update the user_dashboard function:
+
 @login_required
 def user_dashboard(request):
     """หน้าแดชบอร์ดผู้ใช้"""
-    # ดึงข้อมูลโปรไฟล์
+    user = request.user
+    
+    # Check if user profile is complete
     try:
-        user_profile = UserProfile.objects.get(user=request.user)
+        user_profile = UserProfile.objects.get(user=user)
+        profile_complete = user_profile.has_completed_profile
     except UserProfile.DoesNotExist:
-        user_profile = None
-
-    # ตรวจสอบว่าผู้ใช้ล็อกอินผ่าน Google หรือไม่
-    try:
-        social_account = SocialAccount.objects.get(user=request.user, provider='google')
-        is_google_user = True
-    except SocialAccount.DoesNotExist:
-        is_google_user = False
-
-    # ดึงข้อมูลสมาชิก
+        # Create profile if it doesn't exist
+        user_profile = UserProfile.objects.create(user=user)
+        profile_complete = False
+    
+    # If profile is not complete, redirect to profile setup with message
+    if not profile_complete:
+        messages.info(request, 'กรุณากรอกข้อมูลส่วนตัวเพื่อปรับแต่งแดชบอร์ดของคุณ')
+        return redirect('profile_setup')
+    
+    # Check if user has an active subscription
     active_subscription = Subscription.objects.filter(
-        user=request.user, 
+        user=user, 
         status='active', 
         end_date__gte=timezone.now().date()
     ).first()
     
     if active_subscription:
-        # คำนวณจำนวนวันที่เหลือ
+        # Calculate remaining days
         remaining_days = (active_subscription.end_date - timezone.now().date()).days
         active_subscription.remaining_days = max(0, remaining_days)
     
-    # ดึงข้อมูลออเดอร์ล่าสุด
-    recent_orders = Order.objects.filter(user=request.user).order_by('-created_at')[:5]
+    # Get recent orders
+    recent_orders = Order.objects.filter(user=user).order_by('-created_at')[:5]
     
-    # ดึงข้อมูลแผนออกกำลังกาย
-    exercise_plan = ExercisePlan.objects.filter(user=request.user).order_by('-created_at').first()
+    # Get exercise and meal plans
+    exercise_plan = ExercisePlan.objects.filter(user=user).order_by('-created_at').first()
+    meal_plan = MealPlan.objects.filter(user=user).order_by('-created_at').first()
     
-    # ดึงข้อมูลการออกกำลังกายวันนี้
+    # Today's workout and meal
     today_workout = None
+    today_meal = None
+    
     if exercise_plan:
-        # หาวันในสัปดาห์ (1-7)
-        today_weekday = timezone.now().weekday() + 1  # +1 เพราะ weekday() เริ่มที่ 0 (จันทร์)
+        # Get today's weekday (1-7)
+        today_weekday = timezone.now().weekday() + 1  # +1 because weekday() starts at 0 (Monday)
         today_workout = WorkoutDay.objects.filter(
             exercise_plan=exercise_plan,
             day_number=today_weekday
         ).first()
     
-    # ดึงข้อมูลแผนอาหาร
-    meal_plan = MealPlan.objects.filter(user=request.user).order_by('-created_at').first()
-
-    # คำนวณค่า BMI
-    if user_profile and user_profile.weight and user_profile.height:
-        height_m = user_profile.height / 100.0  # แปลงเซนติเมตรเป็นเมตร
-        bmi = user_profile.weight / (height_m * height_m)
-        user_profile.bmi = round(bmi, 1)
-    else:
-        user_profile.bmi = None
-
-    # ดึงข้อมูลอาหารวันนี้
-    today_meal = None
     if meal_plan:
-        # หาวันในสัปดาห์ (1-7)
-        today_weekday = timezone.now().weekday() + 1  # +1 เพราะ weekday() เริ่มที่ 0 (จันทร์)
+        # Get today's weekday (1-7)
+        today_weekday = timezone.now().weekday() + 1
         today_meal = DailyMeal.objects.filter(
             meal_plan=meal_plan,
             day_number=today_weekday
         ).first()
     
-    # ดึงบทความแนะนำ
-    if user_profile and exercise_plan:
-        # แนะนำบทความตามเป้าหมายการออกกำลังกาย
+    # Calculate BMI if height and weight are available
+    if user_profile and user_profile.weight and user_profile.height:
+        height_m = user_profile.height / 100.0  # Convert cm to m
+        bmi = user_profile.weight / (height_m * height_m)
+        user_profile.bmi = round(bmi, 1)
+    else:
+        user_profile.bmi = None
+    
+    # Get recommended articles based on exercise goal
+    if exercise_plan:
         goal_category = {
             'weight_loss': 'weight_loss',
             'fat_loss': 'weight_loss',
@@ -260,12 +306,12 @@ def user_dashboard(request):
             is_published=True
         ).order_by('-published_at')[:3]
     else:
-        # แนะนำบทความทั่วไป
+        # General articles if no exercise plan
         recommended_articles = Content.objects.filter(
             is_published=True
         ).order_by('-published_at')[:3]
     
-    # กิจกรรมล่าสุด
+    # Get last activity
     last_activity = None
     if recent_orders.exists():
         last_activity = f"สั่งซื้อรายการ #{recent_orders[0].order_number} เมื่อ {recent_orders[0].created_at.strftime('%d/%m/%Y')}"
@@ -282,10 +328,10 @@ def user_dashboard(request):
         'today_workout': today_workout,
         'meal_plan': meal_plan,
         'today_meal': today_meal,
-        'is_google_user': is_google_user,
         'recommended_articles': recommended_articles,
         'last_activity': last_activity
     }
+    
     return render(request, 'myapp/dashboard.html', context)
 
 # หน้าบทความและวิดีโอ
@@ -361,7 +407,7 @@ def profile_setup(request):
             profile.save()
             messages.success(request, 'บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว')
             
-            # ตรวจสอบว่ามาจากหน้าไหนแล้วเปลี่ยนเส้นทางการ redirect
+            # Redirect to next page or dashboard
             next_page = request.POST.get('next', 'dashboard')
             return redirect(next_page)
     else:
@@ -841,12 +887,35 @@ def order_detail(request, order_id):
 def profile_update(request):
     """แก้ไขโปรไฟล์ผู้ใช้"""
     user = request.user
+    try:
+        profile = UserProfile.objects.get(user=user)
+    except UserProfile.DoesNotExist:
+        profile = UserProfile(user=user)
+    
     if request.method == 'POST':
-        # ตรวจสอบและบันทึกข้อมูลที่แก้ไข
-        # ...
+        # อัปเดตข้อมูลผู้ใช้
+        user.first_name = request.POST.get('first_name', '')
+        user.last_name = request.POST.get('last_name', '')
+        user.email = request.POST.get('email', '')
+        user.save()
+        
+        # อัปเดตข้อมูลโปรไฟล์
+        profile.birth_date = request.POST.get('birth_date')
+        profile.gender = request.POST.get('gender')
+        profile.height = request.POST.get('height')
+        profile.weight = request.POST.get('weight')
+        profile.activity_level = request.POST.get('activity_level')
+        profile.medical_conditions = request.POST.get('medical_conditions', '')
+        profile.has_completed_profile = True
+        profile.save()
+        
         messages.success(request, 'อัปเดตโปรไฟล์เรียบร้อยแล้ว')
         return redirect('dashboard')
-    return render(request, 'myapp/profile_update.html')
+    
+    context = {
+        'user_profile': profile
+    }
+    return render(request, 'myapp/profile_update.html', context)
 
 @login_required
 def password_change(request):
@@ -856,13 +925,34 @@ def password_change(request):
 @login_required
 def wishlist(request):
     """แสดงรายการโปรด"""
-    # ตรงนี้เราต้องมีโมเดลสำหรับรายการโปรด แต่ยังไม่มีในโค้ดปัจจุบัน
-    # จึงแสดงหน้าว่างไปก่อน
-    return render(request, 'myapp/wishlist.html')
+    # สมมติว่ามีโมเดล Wishlist
+    wishlist_items = Wishlist.objects.filter(user=request.user)
+    return render(request, 'myapp/wishlist.html', {'wishlist_items': wishlist_items})
+
+@login_required
+def remove_from_wishlist(request, item_id):
+    """ลบสินค้าออกจากรายการโปรด"""
+    wishlist_item = get_object_or_404(Wishlist, id=item_id, user=request.user)
+    wishlist_item.delete()
+    messages.success(request, 'ลบสินค้าออกจากรายการโปรดเรียบร้อยแล้ว')
+    return redirect('wishlist')
 
 @login_required
 def support(request):
     """หน้าติดต่อช่วยเหลือ"""
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        subject = request.POST.get('subject')
+        order_number = request.POST.get('order_number')
+        message = request.POST.get('message')
+        
+        # บันทึกข้อความติดต่อลงฐานข้อมูล (ถ้ามีโมเดล ContactMessage)
+        # หรือส่งอีเมลแจ้งเตือนไปยังทีมงาน
+        
+        messages.success(request, 'ส่งข้อความเรียบร้อยแล้ว เราจะติดต่อกลับโดยเร็วที่สุด')
+        return redirect('support')
+    
     return render(request, 'myapp/support.html')
 
 @login_required
