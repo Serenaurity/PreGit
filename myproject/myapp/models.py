@@ -64,6 +64,21 @@ class Subscription(models.Model):
             
         super().save(*args, **kwargs)
 
+# myapp/models.py
+# ในคลาส Subscription เพิ่มเมธอด property สำหรับคำนวณจำนวนวันที่เหลือ
+
+    @property
+    def remaining_days(self):
+        """คำนวณจำนวนวันที่เหลือของสมาชิก"""
+        if self.status != 'active':
+            return 0
+        
+        today = timezone.now().date()
+        if self.end_date < today:
+            return 0
+        
+        return (self.end_date - today).days    
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'รอดำเนินการ'),
@@ -499,3 +514,19 @@ class Wishlist(models.Model):
         
     def __str__(self):
         return f"{self.user.username} - {self.product.name}"
+
+# myapp/models.py
+class FeatureUsage(models.Model):
+    """บันทึกการใช้งานฟีเจอร์ที่จำกัดให้เฉพาะสมาชิก"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feature_usage')
+    subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL, null=True, related_name='usage')
+    feature = models.CharField(max_length=50, choices=[
+        ('exercise_plan', 'แผนออกกำลังกาย'),
+        ('meal_plan', 'แผนอาหาร'),
+        ('progress_tracking', 'ติดตามความก้าวหน้า'),
+        ('nutrition_plan', 'แผนโภชนาการ'),
+    ])
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.get_feature_display()} - {self.timestamp.strftime('%d/%m/%Y %H:%M')}"

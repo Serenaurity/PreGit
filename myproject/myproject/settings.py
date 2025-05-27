@@ -82,7 +82,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'myapp.middleware.AuthenticationMiddleware',  # Add this line
+    'myapp.middleware.AuthenticationMiddleware',
+    'myapp.middleware.SubscriptionMiddleware',   # Add this line
 ]
 
 # Allauth settings

@@ -300,6 +300,27 @@
                     </div>
                 </div>
                 
+                {% if user.is_authenticated %}
+                    {% if active_subscription %}
+                        <div class="bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 p-4 rounded-lg mb-4">
+                            <p>คุณกำลังใช้แพ็คเกจ: <strong>{{ active_subscription.plan.name }}</strong></p>
+                            <p>วันหมดอายุ: {{ active_subscription.end_date|date:"d/m/Y" }} (อีก {{ active_subscription.remaining_days }} วัน)</p>
+                        </div>
+                        
+                        {% if active_subscription.remaining_days <= 7 %}
+                            <div class="bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100 p-4 rounded-lg mb-4">
+                                <p>สมาชิกของคุณกำลังจะหมดอายุภายใน {{ active_subscription.remaining_days }} วัน กรุณาต่ออายุเพื่อใช้งานฟีเจอร์ต่างๆ อย่างต่อเนื่อง</p>
+                                <a href="{% url 'subscription_list' %}" class="mt-2 inline-block px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">ต่ออายุสมาชิก</a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 p-4 rounded-lg mb-4">
+                            <p>คุณยังไม่มีแพ็คเกจสมาชิก สมัครสมาชิกเพื่อใช้งานฟีเจอร์เพิ่มเติม</p>
+                            <a href="{% url 'subscription_list' %}" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">สมัครสมาชิก</a>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
                 <!-- Recommended Articles -->
                 <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-6 animate-on-scroll">
                     <h3 class="text-xl font-bold mb-4">บทความแนะนำ</h3>

@@ -19,7 +19,7 @@ from django.db.models import Q, Sum
 from django.utils import timezone
 from itertools import cycle
 from allauth.socialaccount.models import SocialAccount
-
+from .decorators import subscription_required
 # In views.py, update the register function:
 # In views.py, update the login view (or create one if using Django's default view)
 
@@ -196,29 +196,55 @@ def view_cart(request):
     }
     return render(request, 'myapp/cart.html', context)
 
-# Subscribe to plan (FBV)
 @login_required
 def subscribe(request, plan_id):
+    """สมัครหรือต่ออายุสมาชิก"""
     plan = get_object_or_404(SubscriptionPlan, id=plan_id)
     
-    # Check if user already has an active subscription to this plan
-    existing_subscription = Subscription.objects.filter(
+    # ตรวจสอบว่าผู้ใช้มีสมาชิกที่ใช้งานอยู่หรือไม่
+    active_subscription = Subscription.objects.filter(
         user=request.user,
-        plan=plan,
-        status='active'
+        status='active',
+        end_date__gte=timezone.now().date()
     ).first()
     
-    if existing_subscription:
-        # Redirect to existing subscription
-        return redirect('user_subscriptions')
+    if active_subscription:
+        # ต่ออายุสมาชิก
+        # คำนวณวันที่สิ้นสุดใหม่
+        if plan.duration == 'monthly':
+            new_end_date = active_subscription.end_date + timezone.timedelta(days=30)
+        elif plan.duration == 'quarterly':
+            new_end_date = active_subscription.end_date + timezone.timedelta(days=90)
+        elif plan.duration == 'yearly':
+            new_end_date = active_subscription.end_date + timezone.timedelta(days=365)
+        
+        active_subscription.end_date = new_end_date
+        active_subscription.plan = plan
+        active_subscription.save()
+        
+        messages.success(request, f'ต่ออายุสมาชิก {plan.name} สำเร็จ! สมาชิกของคุณจะมีอายุถึงวันที่ {new_end_date.strftime("%d/%m/%Y")}')
+    else:
+        # สร้างสมาชิกใหม่
+        # กำหนดวันที่สิ้นสุด
+        start_date = timezone.now().date()
+        if plan.duration == 'monthly':
+            end_date = start_date + timezone.timedelta(days=30)
+        elif plan.duration == 'quarterly':
+            end_date = start_date + timezone.timedelta(days=90)
+        elif plan.duration == 'yearly':
+            end_date = start_date + timezone.timedelta(days=365)
+        
+        subscription = Subscription.objects.create(
+            user=request.user,
+            plan=plan,
+            start_date=start_date,
+            end_date=end_date,
+            status='active'
+        )
+        
+        messages.success(request, f'สมัครสมาชิก {plan.name} สำเร็จ! สมาชิกของคุณจะมีอายุถึงวันที่ {end_date.strftime("%d/%m/%Y")}')
     
-    # Create new subscription (payment would be handled here in production)
-    subscription = Subscription.objects.create(
-        user=request.user,
-        plan=plan
-    )
-    
-    return redirect('user_subscriptions')
+    return redirect('dashboard')
 
 # views.py - เพิ่มฟังก์ชันวิว
 
@@ -420,6 +446,7 @@ def profile_setup(request):
     return render(request, 'myapp/profile_setup.html', context)
 
 @login_required
+@subscription_required
 def exercise_plan(request):
     """หน้าจัดการแผนออกกำลังกาย"""
     # ตรวจสอบว่าผู้ใช้มีการสมัครสมาชิกที่ใช้งานอยู่
@@ -463,6 +490,7 @@ def exercise_plan(request):
     return render(request, 'myapp/exercise_plan_setup.html', context)
 
 @login_required
+@subscription_required
 def view_exercise_plan(request):
     """หน้าดูแผนออกกำลังกาย"""
     # ตรวจสอบว่าผู้ใช้มีการสมัครสมาชิกที่ใช้งานอยู่
@@ -528,6 +556,7 @@ def view_workout_day(request, day_id):
     return render(request, 'myapp/view_workout_day.html', context)
 
 @login_required
+@subscription_required
 def meal_plan(request):
     """หน้าจัดการแผนอาหาร"""
     # ตรวจสอบว่าผู้ใช้มีการสมัครสมาชิกที่ใช้งานอยู่
@@ -593,6 +622,7 @@ def meal_plan(request):
     return render(request, 'myapp/meal_plan_setup.html', context)
 
 @login_required
+@subscription_required
 def view_meal_plan(request):
     """หน้าดูแผนอาหาร"""
     # ตรวจสอบว่าผู้ใช้มีการสมัครสมาชิกที่ใช้งานอยู่
