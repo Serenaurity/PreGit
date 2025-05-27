@@ -4,7 +4,8 @@ from .models import (
     UserProfile, ExercisePlan, WorkoutDay, MealPlan, DailyMeal, 
     Exercise, WorkoutExercise, Recipe, Ingredient, MealItem,
     ForumTopic, ForumThread, Article, Video, Content,
-    Product, Order, OrderItem, SubscriptionPlan, Subscription
+    Product, Order, OrderItem, SubscriptionPlan, Subscription,
+    Payment, QRCodePayment
 )
 from .forms import UserProfileForm, ExercisePlanForm, MealPlanForm, NutritionPreferencesForm
 from .forms import CustomUserCreationForm
@@ -20,6 +21,7 @@ from django.utils import timezone
 from itertools import cycle
 from allauth.socialaccount.models import SocialAccount
 from .decorators import subscription_required
+from .services import PaymentService
 # In views.py, update the register function:
 # In views.py, update the login view (or create one if using Django's default view)
 
@@ -27,6 +29,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
+import re
 
 def login_view(request):
     """Custom login view with better message handling"""
@@ -152,13 +155,9 @@ def add_to_cart(request, product_id):
     # Get or create order with 'pending' status (cart)
     order, created = Order.objects.get_or_create(
         user=request.user,
-        status='pending'
+        status='pending',
+        defaults={'total_amount': 0}
     )
-    
-    # If order was just created, set initial total_amount
-    if created:
-        order.total_amount = 0
-        order.save()
     
     # Check if item already in cart, if so increase quantity
     try:
@@ -1035,18 +1034,50 @@ def checkout(request):
         return redirect('product_list')
     
     if request.method == 'POST':
-        # ดำเนินการชำระเงิน (จำลองว่าสำเร็จเสมอ)
-        cart.status = 'paid'
+        payment_method = request.POST.get('payment_method')
+        shipping_address = request.POST.get('shipping_address')
+        if not payment_method or payment_method != 'promptpay':
+            messages.error(request, 'กรุณาเลือกวิธีการชำระเงิน (PromptPay เท่านั้น)')
+            return redirect('checkout')
+        if not shipping_address or len(shipping_address) < 20 or not re.search(r'\d{5}', shipping_address):
+            messages.error(request, 'กรุณากรอกที่อยู่จัดส่งให้ครบถ้วน (ต้องมีรหัสไปรษณีย์ 5 หลัก)')
+            return redirect('checkout')
+        cart.shipping_address = shipping_address
         cart.save()
-        
-        messages.success(request, 'สั่งซื้อสินค้าสำเร็จ! ขอบคุณที่ใช้บริการ')
-        return redirect('order_detail', order_id=cart.id)
+        payment = Payment.objects.filter(order=cart).first()
+        if payment is None:
+            payment, qr_payment = PaymentService.create_payment(cart, payment_method)
+        else:
+            qr_payment = getattr(payment, 'qrcode', None)
+            if qr_payment is None:
+                # If payment exists but QR code does not, create QR code
+                _, qr_payment = PaymentService.create_payment(cart, payment_method)
+        return redirect('payment', payment_id=payment.id)
     
     context = {
         'cart': cart,
         'items': cart.items.all()
     }
     return render(request, 'myapp/checkout.html', context)
+
+@login_required
+def payment(request, payment_id):
+    """หน้าแสดง QR Code สำหรับชำระเงิน"""
+    payment = get_object_or_404(Payment, id=payment_id, order__user=request.user)
+    qr_payment = get_object_or_404(QRCodePayment, payment=payment)
+    
+    if request.method == 'POST':
+        # Verify payment
+        payment = PaymentService.verify_payment(payment_id)
+        messages.success(request, 'ชำระเงินสำเร็จ! ขอบคุณที่ใช้บริการ')
+        return redirect('order_detail', order_id=payment.order.id)
+    
+    context = {
+        'payment': payment,
+        'qr_payment': qr_payment,
+        'expires_in': (qr_payment.expires_at - timezone.now()).total_seconds()
+    }
+    return render(request, 'myapp/payment.html', context)
 
 @login_required
 def track_progress(request):

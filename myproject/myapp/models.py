@@ -94,6 +94,7 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     order_number = models.CharField(max_length=20, unique=True, null=True, blank=True)
+    shipping_address = models.TextField(blank=True, null=True)
     
     def __str__(self):
         return f"คำสั่งซื้อ #{self.id} - {self.user.username}"
@@ -530,3 +531,41 @@ class FeatureUsage(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.get_feature_display()} - {self.timestamp.strftime('%d/%m/%Y %H:%M')}"
+
+class Payment(models.Model):
+    PAYMENT_STATUS = (
+        ('pending', 'รอดำเนินการ'),
+        ('completed', 'สำเร็จ'),
+        ('failed', 'ล้มเหลว'),
+        ('refunded', 'คืนเงินแล้ว'),
+    )
+    
+    PAYMENT_METHOD = (
+        ('promptpay', 'PromptPay'),
+        ('truemoney', 'TrueMoney'),
+        ('linepay', 'LINE Pay'),
+    )
+    
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='payment')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
+    transaction_id = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Payment for Order #{self.order.order_number}"
+
+class QRCodePayment(models.Model):
+    payment = models.OneToOneField(Payment, on_delete=models.CASCADE, related_name='qrcode')
+    qr_code = models.ImageField(upload_to='qrcodes/', blank=True, null=True)
+    qr_string = models.TextField(blank=True, null=True)
+    expires_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"QR Code for Payment #{self.payment.id}"
+    
+    def is_expired(self):
+        return timezone.now() > self.expires_at

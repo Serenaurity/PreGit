@@ -71,11 +71,11 @@ def div(value, arg):
 
 @register.filter
 def multiply(value, arg):
-    """คูณค่าด้วยอาร์กิวเมนต์"""
+    """Multiply the value by the argument"""
     try:
         return float(value) * float(arg)
     except (ValueError, TypeError):
-        return value
+        return 0
 
 @register.filter
 def sum_quantity(items):
