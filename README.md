@@ -68,3 +68,5 @@ python manage.py runserver
 
 ## License
 MIT
+
+Preview Video : https://youtu.be/RhTB0RYkl7E
